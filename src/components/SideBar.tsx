@@ -22,10 +22,21 @@ interface MovieProps {
 }
 
 export function SideBar() {
-	const [selectedGenreId, setSelectedGenreId] = useState(1);
-
+  const [selectedGenreId, setSelectedGenreId] = useState(1);
   const [genres, setGenres] = useState<GenreResponseProps[]>([]);
+  const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>({} as GenreResponseProps);
+  const [movies, setMovies] = useState<MovieProps[]>([]);
 
+
+  useEffect(() => {
+    api.get<MovieProps[]>(`movies/?Genre_id=${selectedGenreId}`).then(response => {
+      setMovies(response.data);
+    });
+
+    api.get<GenreResponseProps>(`genres/${selectedGenreId}`).then(response => {
+      setSelectedGenre(response.data);
+    })
+  }, [selectedGenreId]);
 
   useEffect(() => {
     api.get<GenreResponseProps[]>('genres').then(response => {
@@ -33,24 +44,23 @@ export function SideBar() {
     });
   }, []);
 
-	function handleClickButton(id: number) {
+  function handleClickButton(id: number) {
     setSelectedGenreId(id);
   }
 return(
 	<><nav className="sidebar">
-		<span>Watch<p>Me</p></span>
-
-		<div className="buttons-container">
-			{genres.map(genre => (
-				<Button
-					key={String(genre.id)}
-					title={genre.title}
-					iconName={genre.name}
-					onClick={() => handleClickButton(genre.id)}
-					selected={selectedGenreId === genre.id} />
-			))}
-		</div>
-	</nav><Content genre={selectedGenreId}/></>
+    <span>Watch<p>Me</p></span>
+    <div className="buttons-container">
+      {genres.map(genre => (
+        <Button
+          key={String(genre.id)}
+          title={genre.title}
+          iconName={genre.name}
+          onClick={() => handleClickButton(genre.id)}
+          selected={selectedGenreId === genre.id} />
+      ))}
+    </div>
+  </nav><Content selectedGenre={selectedGenre} movies={movies} /></>
 
 )
 }
